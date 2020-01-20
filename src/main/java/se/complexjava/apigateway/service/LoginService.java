@@ -1,4 +1,4 @@
-package se.complexjava.apigateway.service.serviceimpl;
+package se.complexjava.apigateway.service;
 
 import se.complexjava.apigateway.auth.Jwt;
 import se.complexjava.apigateway.auth.Role;
