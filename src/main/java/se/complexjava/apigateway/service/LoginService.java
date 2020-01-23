@@ -1,13 +1,12 @@
 package se.complexjava.apigateway.service;
 
 import se.complexjava.apigateway.auth.Jwt;
-import se.complexjava.apigateway.auth.Role;
 import se.complexjava.apigateway.auth.User;
+import se.complexjava.apigateway.auth.Role;
 import se.complexjava.apigateway.exception.CustomException;
 import se.complexjava.apigateway.repository.JwtTokenRepository;
 import se.complexjava.apigateway.repository.UserRepository;
 import se.complexjava.apigateway.security.JwtProvider;
-import se.complexjava.apigateway.service.ILoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;

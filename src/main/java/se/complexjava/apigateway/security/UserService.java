@@ -1,9 +1,9 @@
 package se.complexjava.apigateway.security;
 
 import org.springframework.context.annotation.Primary;
+import se.complexjava.apigateway.auth.User;
 import se.complexjava.apigateway.auth.UDetails;
 import se.complexjava.apigateway.auth.Role;
-import se.complexjava.apigateway.auth.User;
 import se.complexjava.apigateway.exception.CustomException;
 import se.complexjava.apigateway.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
