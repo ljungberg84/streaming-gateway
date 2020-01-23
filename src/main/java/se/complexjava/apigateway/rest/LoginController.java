@@ -2,9 +2,7 @@ package se.complexjava.apigateway.rest;
 
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
-import se.complexjava.apigateway.auth.AuthResponse;
-import se.complexjava.apigateway.auth.LoginRequest;
-import se.complexjava.apigateway.auth.User;
+import se.complexjava.apigateway.auth.*;
 import se.complexjava.apigateway.service.ILoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,7 +24,7 @@ public class LoginController {
     @PostMapping("/signin")
     @ResponseBody
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
-        String token = iLoginService.login(loginRequest.getUsername(),loginRequest.getPassword());
+        String token = iLoginService.login(loginRequest.getUsername(), loginRequest.getPassword());
         HttpHeaders headers = new HttpHeaders();
         List<String> headerlist = new ArrayList<>();
         List<String> exposeList = new ArrayList<>();
@@ -44,24 +42,23 @@ public class LoginController {
     @CrossOrigin("*")
     @PostMapping("/signout")
     @ResponseBody
-    public ResponseEntity<AuthResponse> logout (@RequestHeader(value="Authorization") String token) {
+    public ResponseEntity<AuthResponse> logout(@RequestHeader(value = "Authorization") String token) {
         HttpHeaders headers = new HttpHeaders();
-      if (iLoginService.logout(token)) {
-          headers.remove("Authorization");
-          return new ResponseEntity<AuthResponse>(new AuthResponse("logged out"), headers, HttpStatus.CREATED);
-      }
+        if (iLoginService.logout(token)) {
+            headers.remove("Authorization");
+            return new ResponseEntity<AuthResponse>(new AuthResponse("logged out"), headers, HttpStatus.CREATED);
+        }
         return new ResponseEntity<AuthResponse>(new AuthResponse("Logout Failed"), headers, HttpStatus.NOT_MODIFIED);
     }
 
     /**
-     *
      * @param token
      * @return boolean.
      * if request reach here it means it is a valid token.
      */
     @PostMapping("/valid/token")
     @ResponseBody
-    public Boolean isValidToken (@RequestHeader(value="Authorization") String token) {
+    public Boolean isValidToken(@RequestHeader(value = "Authorization") String token) {
         return true;
     }
 
@@ -69,7 +66,7 @@ public class LoginController {
     @PostMapping("/signin/token")
     @CrossOrigin("*")
     @ResponseBody
-    public ResponseEntity<AuthResponse> createNewToken (@RequestHeader(value="Authorization") String token) {
+    public ResponseEntity<AuthResponse> createNewToken(@RequestHeader(value = "Authorization") String token) {
         String newToken = iLoginService.createNewToken(token);
         HttpHeaders headers = new HttpHeaders();
         List<String> headerList = new ArrayList<>();
@@ -84,10 +81,6 @@ public class LoginController {
         headers.set("Authorization", newToken);
         return new ResponseEntity<AuthResponse>(new AuthResponse(newToken), headers, HttpStatus.CREATED);
     }
-
-
-
-
 
 
     @CrossOrigin("*")
@@ -105,37 +98,33 @@ public class LoginController {
     }
 
 
-
     @CrossOrigin("*")
     @PostMapping("/signup")
     @ResponseBody
-    public ResponseEntity<String> signup(@RequestBody User user) {
-        //save to MongoDB
-        iLoginService.saveUser(user);
+    public ResponseEntity<String> signup(@RequestBody RequestData data) {
 
+       //save to Sql
+        SqlUser sqlUser = new SqlUser();
+        sqlUser.setEmail(data.getEmail());
+        sqlUser.setFirstName(data.getFirstName());
+        sqlUser.setLastName(data.getLastName());
+        sqlUser.setPersonalId(data.getPersonalId());
+        sqlUser.setAvatarImagePath(data.getAvatarImagePath());
         String url = "http://video-data/users/register";
+        HttpEntity<SqlUser> request = new HttpEntity<>(sqlUser);
+        long id = restTemplate.postForObject(url, request, Long.class);
 
-        User u = new User();
-        u.setEmail(user.getEmail());
-        u.setFirstName(user.getFirstName());
-        u.setLastName(user.getLastName());
-        u.setPersonalId(user.getPersonalId());
+        //save to MongoDB
+        if (id != 0) {
+            User mongoUser = new User();
+            mongoUser.setId(id);
+            mongoUser.setEmail(data.getEmail());
+            mongoUser.setPassword(data.getPassword());
+            mongoUser.setRole(data.getRole());
+            iLoginService.saveUser(mongoUser);
+        }
 
-        HttpEntity<User> request = new HttpEntity<>(u);
-        String result = restTemplate.postForObject(url, request, String.class);
-
-        return new ResponseEntity<String>("created "+result, HttpStatus.CREATED);
+        return new ResponseEntity<String>("User with id '" +id+ "' created ", HttpStatus.CREATED);
     }
-
-
-
-
-
-
-
-
-
-
-
 
 }
