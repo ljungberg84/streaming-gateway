@@ -35,7 +35,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/**/signup/**",
                         "/**/aaa/**",
                         "/**/bbb/**",
-                        "/**/test1/**"
+                        "/**/test1/**",
+                        "/**/users/register/**"
                         ).permitAll()
                 // Disallow everything else..
                 .anyRequest().authenticated();
