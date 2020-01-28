@@ -12,5 +12,4 @@ public class SqlUser {
     private String lastName;
     private String personalId;
     private String avatarImagePath;
-
 }

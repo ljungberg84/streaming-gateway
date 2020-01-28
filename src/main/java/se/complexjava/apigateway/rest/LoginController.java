@@ -13,9 +13,7 @@ import se.complexjava.apigateway.service.ILoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import sun.font.CreatedFontTracker;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,17 +23,11 @@ public class LoginController {
 
     @Autowired
     private ILoginService iLoginService;
-    @Autowired
-    RestTemplate restTemplate;
-    private OkHttpClient client = new OkHttpClient();
+    //@Autowired
+    RestTemplate restTemplate = new RestTemplate();
     private Logger logger = LoggerFactory.getLogger(LoginController.class);
-    String url = "http://data:8000/users/register";
-
-
-
-
-    //@Value()
-    //String videoDataLocation;
+    @Value("${video_data_url}")
+    String videoDataUrl;
 
     @CrossOrigin("*")
     @PostMapping("/signin")
@@ -129,56 +121,22 @@ public class LoginController {
         sqlUser.setAvatarImagePath(data.getAvatarImagePath());
 
         //String url = "http://video-data/users/register";
-        //String url = "http://api-gateway:7000/api/video-data/users/register
         //String url = "http://data:8000/users/register";
+        logger.info("url: {}", videoDataUrl);
 
-        //HttpEntity<SqlUser> request = new HttpEntity<>(sqlUser);
-        //long id = restTemplate.postForObject(url, request, Long.class);
-
-        RequestBody body = new FormBody.Builder()
-                .add("firstName", data.getFirstName())
-                .add("lastName", data.getLastName())
-                .add("personalId", data.getPersonalId())
-                .add("email", data.getEmail())
-                .add("avatarImagePath", data.getAvatarImagePath())
-                .build();
-        logger.info("preparing request. body: {}, url: {}", body, url);
+        HttpEntity<SqlUser> request = new HttpEntity<>(sqlUser);
+        long id = restTemplate.postForObject(videoDataUrl, request, Long.class);
 
         //save to MongoDB
-//        if (id != 0) {
-//            User mongoUser = new User();
-//            mongoUser.setId(id);
-//            mongoUser.setEmail(data.getEmail());
-//            mongoUser.setPassword(data.getPassword());
-//            mongoUser.setRole(data.getRole());
-//            iLoginService.saveUser(mongoUser);
-//        }
-        String response = post(url, body);
-        logger.info("response: {}", response.toString());
-
-        //return new ResponseEntity<String>("User with id ' created ", HttpStatus.CREATED);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    String post(String url, RequestBody body) throws IOException {
-
-        //RequestBody body = RequestBody.create(message, JSON);
-        Request request = new Request.Builder()
-            .url(url)
-            .post(body)
-            //.addHeader("Content-Type", "application/json")
-            .header("Content-Type", "application/json")
-            .build();
-
-        try (Response response = client.newCall(request).execute()) {
-
-            logger.info("response message: {}", response.message());
-            logger.info("response code: {}", response.code());
-
-            return response.body().string();
-        }catch(Exception e){
-            logger.info("error: {}", e.getMessage());
+        if (id != 0) {
+            User mongoUser = new User();
+            mongoUser.setId(id);
+            mongoUser.setEmail(data.getEmail());
+            mongoUser.setPassword(data.getPassword());
+            mongoUser.setRole(data.getRole());
+            iLoginService.saveUser(mongoUser);
         }
-        return "poo";
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("user with id: " + id + " created");
     }
 }
